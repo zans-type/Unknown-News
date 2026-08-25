@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unknown News Pro - Live</title>
+    <style>
+        :root {
+            --bg: #f5f5f5;
+            --card: #ffffff;
+            --text: #1a1a1a;
+            --muted: #666;
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #ffcc00;
+            --border: #ddd;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .dark {
+            --bg: #1a1a1a;
+            --card: #2d2d2d;
+            --text: #eee;
+            --muted: #aaa;
+            --primary: #000;
+            --secondary: #1a1a2e;
+            --accent: #ffd700;
+            --border: #444;
+            --shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 15px;
+            transition: background 0.3s, color 0.3s;
+        }
+        header {
+            background: var(--primary);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .logo {
+            font-size: 1.4rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .logo span { color: var(--accent); }
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+        .btn-icon {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+        .btn-icon:hover { background: rgba(255,255,255,0.2); }
+        .menu-btn {
+            display: none;
+            background: none;
+            border: 1px solid white;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        nav { background: var(--secondary); }
+        nav ul { list-style: none; display: flex; flex-wrap: wrap; padding: 0 10px; }
+        nav li a {
+            display: block;
+            padding: 12px 16px;
+            color: #ddd;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        nav li a:hover, nav li a.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .search-bar {
+            padding: 10px 16px;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            font-size: 0.9rem;
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+        }
+        .search-bar input:focus { border-color: var(--accent); }
+        .search-bar button {
+            padding: 10px 18px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .hero {
+            background: linear-gradient(135deg, #4a69bd, #6a89cc);
+            color: white;
+            text-align: center;
+            padding: 25px 15px;
+        }
+        .hero h1 { font-size: 1.8rem; margin-bottom: 5px; }
+        .hero p { font-size: 0.9rem; opacity: 0.9; }
+        .hero-stats { display: flex; justify-content: center; gap: 30px; margin-top: 15px; flex-wrap: wrap; }
+        .stat-item { text-align: center; }
+        .stat-number { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
+        .stat-label { font-size: 0.75rem; opacity: 0.9; }
+        .chips {
+            display: flex;
+            gap: 6px;
+            padding: 10px;
+            background: var(--card);
+            overflow-x: auto;
+            white-space: nowrap;
+            border-bottom: 1px solid var(--border);
+            -webkit-overflow-scrolling: touch;
+        }
+        .chip {
+            background: var(--bg);
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+            color: var(--text);
+            transition: all 0.2s;
+        }
+        .chip:hover, .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .container { max-width: 900px; margin: 0 auto; padding: 15px; min-height: 60vh; }
+        .section-title { font-size: 1.2rem; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .article-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        @media (min-width: 600px) {
+            .article-grid { grid-template-columns: 1fr 1fr; }
+            .menu-btn { display: none; }
+        }
+        @media (max-width: 599px) {
+            .menu-btn { display: block; }
+            nav { display: none; }
+            nav.open { display: block; }
+            nav ul { flex-direction: column; padding: 0; }
+        }
+        .article-card {
+            background: var(--card);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .article-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .article-card:active { transform: scale(0.98); }
+        .article-img {
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+        .article-img.no-image {
+            background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+        }
+        .bookmark-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        .article-body { padding: 14px; flex: 1; display: flex; flex-direction: column; }
+        .article-body h2 { font-size: 1.05rem; margin-bottom: 5px; color: var(--text); line-height: 1.3; }
+        .article-meta { font-size: 0.75rem; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .badge-category { background: var(--primary); color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.7rem; }
+        .article-excerpt { font-size: 0.85rem; color: var(--muted); flex: 1; }
+        .article-detail {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+        .detail-img {
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .article-detail h1 { font-size: 1.6rem; margin-bottom: 8px; line-height: 1.3; }
+        .detail-meta {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .detail-content p { margin-bottom: 12px; text-align: justify; }
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 15px;
+            background: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+        }
+        .comments-section { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); }
+        .comments-section h3 { font-size: 1rem; margin-bottom: 10px; }
+        .comment-form { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .comment-form input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .comment-form button {
+            padding: 10px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .comment-item { background: var(--bg); padding: 10px; border-radius: 5px; margin-bottom: 8px; font-size: 0.85rem; }
+        .comment-item strong { color: var(--accent); display: block; margin-bottom: 3px; }
+        .related-articles { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border); }
+        .related-articles h3 { font-size: 1rem; margin-bottom: 10px; }
+        .related-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        @media (min-width: 600px) { .related-grid { grid-template-columns: 1fr 1fr; } }
+        .related-card { background: var(--bg); border-radius: 8px; padding: 10px; cursor: pointer; transition: background 0.2s; }
+        .related-card:hover { background: var(--border); }
+        .related-card h4 { font-size: 0.9rem; margin-bottom: 3px; }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        .modal h2 { margin-bottom: 15px; font-size: 1.3rem; }
+        .modal input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .modal button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+        .modal .close-btn { background: transparent; color: var(--text); border: 1px solid var(--border); margin-top: 10px; }
+        .user-info {
+            background: rgba(255,255,255,0.1);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: none;
+        }
+        footer {
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 20px;
+            font-size: 0.8rem;
+        }
+        .hidden { display: none !important; }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-top">
+        <div class="logo" onclick="showHome()">Unknown<span>News</span></div>
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+        <div class="header-actions">
+            <span class="user-info" id="userInfo"></span>
+            <button class="btn-icon" onclick="refreshNews()" title="Refresh Berita">🔄</button>
+            <button class="btn-icon" onclick="toggleDarkMode()" title="Mode Gelap/Terang">🌓</button>
+            <button class="btn-icon" onclick="showBookmarks()" title="Bookmark">🔖</button>
+            <button class="btn-icon" onclick="showLoginModal()" id="loginBtn">Masuk</button>
+        </div>
+    </div>
+    <nav id="mainNav">
+        <ul>
+            <li><a class="nav-link active" data-page="home" onclick="showHome()">🏠 Beranda</a></li>
+            <li><a class="nav-link" data-page="all" onclick="showCategory('all')">📰 Semua</a></li>
+            <li><a class="nav-link" data-page="technology" onclick="showCategory('technology')">💻 Teknologi</a></li>
+            <li><a class="nav-link" data-page="business" onclick="showCategory('business')">💼 Bisnis</a></li>
+            <li><a class="nav-link" data-page="entertainment" onclick="showCategory('entertainment')">🎬 Hiburan</a></li>
+            <li><a class="nav-link" data-page="sports" onclick="showCategory('sports')">⚽ Olahraga</a></li>
+            <li><a class="nav-link" data-page="health" onclick="showCategory('health')">🥗 Kesehatan</a></li>
+            <li><a class="nav-link" data-page="education" onclick="showCategory('education')">📚 Pendidikan</a></li>
+            <li><a class="nav-link" data-page="about" onclick="showAbout()">ℹ️ Tentang</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="🔍 Cari artikel..." onkeyup="handleSearch(event)">
+    <button onclick="searchArticles()">Cari</button>
+</div>
+
+<section class="hero" id="heroSection">
+    <h1>Berita Terkini & Terpercaya</h1>
+    <p>Update terbaru dari internet, langsung ke genggamanmu.</p>
+    <div class="hero-stats" id="heroStats"></div>
+</section>
+
+<div class="chips" id="categoryChips">
+    <span class="chip active" data-category="all" onclick="showCategory('all')">Semua</span>
+    <span class="chip" data-category="technology" onclick="showCategory('technology')">Teknologi</span>
+    <span class="chip" data-category="business" onclick="showCategory('business')">Bisnis</span>
+    <span class="chip" data-category="entertainment" onclick="showCategory('entertainment')">Hiburan</span>
+    <span class="chip" data-category="sports" onclick="showCategory('sports')">Olahraga</span>
+    <span class="chip" data-category="health" onclick="showCategory('health')">Kesehatan</span>
+    <span class="chip" data-category="education" onclick="showCategory('education')">Pendidikan</span>
+</div>
+
+<main class="container" id="mainContent">
+    <div id="listView">
+        <div class="section-title">
+            <span id="listTitle">📰 Artikel Terbaru</span>
+        </div>
+        <div class="article-grid" id="articleGrid">
+            <div class="loading">Memuat berita...</div>
+        </div>
+    </div>
+
+    <div id="detailView" class="hidden">
+        <button class="back-btn" onclick="goBack()">← Kembali</button>
+        <div id="detailContent"></div>
+    </div>
+
+    <div id="aboutView" class="hidden">
+        <div class="article-detail">
+            <h1>ℹ️ Tentang Unknown News</h1>
+            <p>Unknown News adalah portal berita digital yang menyajikan informasi terkini dari berbagai kategori. Kami berkomitmen untuk memberikan berita yang akurat, cepat, dan mudah diakses.</p>
+            <p>Website ini menggunakan API publik untuk mengambil berita terbaru secara otomatis. Jika API tidak tersedia, sistem akan menggunakan data cadangan.</p>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p><strong>Unknown News Pro</strong> &copy; 2025</p>
+    <p>Dikembangkan oleh Zans & AI Assistant</p>
+</footer>
+
+<div class="modal-overlay" id="loginModal">
+    <div class="modal">
+        <h2>🔐 Masuk</h2>
+        <input type="text" id="loginName" placeholder="Nama pengguna">
+        <input type="password" id="loginPassword" placeholder="Kata sandi">
+        <button onclick="login()">Masuk</button>
+        <button class="close-btn" onclick="closeLoginModal()">Batal</button>
+    </div>
+</div>
+
+<script>
+    // ================= KONFIGURASI =================
+    const API_KEY = '89953f6b7d709101e952e7cf725ff63e'; // Ganti dengan API key kamu
+    const API_BASE = 'https://gnews.io/api/v4';
+
+    // ================= DATA LOKAL FALLBACK =================
+    const fallbackArticles = [
+        {id:1, title:"Smartphone Murah dengan Performa Tangguh", category:"Teknologi", time:"2 jam lalu", emoji:"📱", gradient:"linear-gradient(135deg, #a18cd1, #fbc2eb)", excerpt:"Pasar smartphone kembali diramaikan dengan perangkat ramah kantong.", content:["Pasar smartphone Indonesia kembali diramaikan dengan kehadiran perangkat baru.","Baterai besar dan layar HD+ menjadi andalan."]},
+        {id:2, title:"UMKM Naik Kelas Lewat Digitalisasi", category:"Bisnis", time:"3 jam lalu", emoji:"💼", gradient:"linear-gradient(135deg, #ffecd2, #fcb69f)", excerpt:"Pelaku UMKM mulai manfaatkan platform digital.", content:["Digitalisasi menjadi kunci utama UMKM.","Banyak pelaku usaha kecil mulai memanfaatkan media sosial."]},
+        {id:3, title:"Film Lokal Terbaru Siap Tayang", category:"Hiburan", time:"5 jam lalu", emoji:"🎬", gradient:"linear-gradient(135deg, #f6d365, #fda085)", excerpt:"Industri perfilman tanah air kembali bergeliat.", content:["Rumah produksi merilis film drama keluarga.","Film dijadwalkan tayang serentak."]},
+        {id:4, title:"Timnas U-23 Lolos ke Semifinal", category:"Olahraga", time:"7 jam lalu", emoji:"⚽", gradient:"linear-gradient(135deg, #84fab0, #8fd3f4)", excerpt:"Timnas U-23 melaju ke semifinal.", content:["Timnas U-23 menang dramatis.","Gol kemenangan tercipta di menit akhir."]},
+        {id:5, title:"Tips Pola Makan Sehat", category:"Kesehatan", time:"9 jam lalu", emoji:"🥗", gradient:"linear-gradient(135deg, #fccb90, #d57eeb)", excerpt:"Jaga kesehatan di tengah kesibukan.", content:["Siapkan bekal dari rumah.","Minum air putih yang cukup."]},
+        {id:6, title:"Pentingnya Literasi Digital", category:"Pendidikan", time:"12 jam lalu", emoji:"📚", gradient:"linear-gradient(135deg, #a1c4fd, #c2e9fb)", excerpt:"Generasi muda harus siap era informasi.", content:["Literasi digital menjadi kebutuhan mendasar.","Sekolah mulai terapkan kurikulum digital."]}
+    ];
+
+    // ================= STATE =================
+    let articleData = [...fallbackArticles]; // aktif data
+    let currentCategory = 'all';
+    let currentPage = 'home';
+    let currentArticleId = null;
+    let darkMode = false;
+    let loggedInUser = null;
+    let bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+    let comments = JSON.parse(localStorage.getItem('comments') || '{}');
+    let searchQuery = '';
+    let isLoading = false;
+
+    // ================= FUNGSI API =================
+    async function fetchNews(category = 'general') {
+        if (!API_KEY || API_KEY === 'ISI_API_KEY_GNews_ANDA') {
+            console.warn('API key belum diisi. Menggunakan data lokal.');
+            return null;
+        }
+        try {
+            isLoading = true;
+            const endpoint = category === 'all' ? 'top-headlines?lang=id&country=id&max=10' : `top-headlines?category=${category}&lang=id&country=id&max=10`;
+            const response = await fetch(`${API_BASE}/${endpoint}&apikey=${API_KEY}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            isLoading = false;
+            if (data.articles && data.articles.length > 0) {
+                return data.articles.map((a, index) => ({
+                    id: Date.now() + index,
+                    title: a.title,
+                    category: category === 'all' ? (a.source.name || 'Umum') : category,
+                    time: new Date(a.publishedAt).toLocaleString('id-ID', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}),
+                    emoji: null,
+                    imageUrl: a.image || null,
+                    gradient: 'linear-gradient(135deg, #667eea, #764ba2)',
+                    excerpt: a.description || a.title,
+                    content: a.content ? a.content.split('\n').filter(p => p.trim()) : [a.description || ''],
+                    sourceUrl: a.url
+                }));
+            }
+            return null;
+        } catch (error) {
+            console.error('Gagal fetch news:', error);
+            isLoading = false;
+            return null;
+        }
+    }
+
+    async function loadNewsForCategory(category) {
+        const news = await fetchNews(category);
+        if (news) {
+            articleData = news;
+        } else {
+            // fallback: filter data lokal berdasarkan kategori (untuk demo)
+            articleData = category === 'all' ? [...fallbackArticles] : fallbackArticles.filter(a => a.category.toLowerCase() === category.toLowerCase());
+        }
+        renderCurrentView();
+    }
+
+    // ================= RENDER =================
+    function renderStats() {
+        const statsEl = document.getElementById('heroStats');
+        const totalArticles = articleData.length;
+        const totalCategories = new Set(articleData.map(a => a.category)).size;
+        statsEl.innerHTML = `
+            <div class="stat-item"><div class="stat-number">${totalArticles}</div><div class="stat-label">Artikel</div></div>
+            <div class="stat-item"><div class="stat-number">${totalCategories}</div><div class="stat-label">Kategori</div></div>
+            <div class="stat-item"><div class="stat-number">${bookmarks.length}</div><div class="stat-label">Bookmark</div></div>
+        `;
+    }
+
+    function renderArticleGrid(filteredArticles) {
+        const grid = document.getElementById('articleGrid');
+        grid.innerHTML = '';
+        if (filteredArticles.length === 0) {
+            grid.innerHTML = '<p style="text-align:center;padding:20px;color:var(--muted)">Tidak ada artikel ditemukan</p>';
+            return;
+        }
+        filteredArticles.forEach(article => {
+            const isBookmarked = bookmarks.includes(article.id);
+            const card = document.createElement('div');
+            card.className = 'article-card';
+            const imageHtml = article.imageUrl 
+                ? `<div class="article-img" style="background-image:url('${article.imageUrl}')"></div>`
+                : `<div class="article-img no-image" style="background:${article.gradient}">${article.emoji || '📰'}</div>`;
+            card.innerHTML = `
+                ${imageHtml}
+                <span class="bookmark-badge" onclick="event.stopPropagation(); toggleBookmark(${article.id})">${isBookmarked ? '🔖' : '📑'}</span>
+                <div class="article-body">
+                    <h2>${article.title}</h2>
+                    <div class="article-meta">
+                        <span class="badge-category">${article.category}</span>
+                        <span>${article.time}</span>
+                    </div>
+                    <p class="article-excerpt">${article.excerpt}</p>
+                </div>
+            `;
+            card.addEventListener('click', () => openDetail(article.id));
+            grid.appendChild(card);
+        });
+    }
+
+    function renderCurrentView() {
+        document.getElementById('listView').classList.remove('hidden');
+        document.getElementById('detailView').classList.add('hidden');
+        document.getElementById('aboutView').classList.add('hidden');
+        document.getElementById('heroSection').classList.remove('hidden');
+        let filtered = articleData;
+        if (searchQuery) {
+            filtered = articleData.filter(a => 
+                a.title.toLowerCase().includes(searchQuery) || 
+                a.excerpt.toLowerCase().includes(searchQuery) ||
+                a.category.toLowerCase().includes(searchQuery)
+            );
+        }
+        renderArticleGrid(filtered);
+        renderStats();
+    }
+
+    function showHome() {
+        currentPage = 'home';
+        currentCategory = 'all';
+        searchQuery = '';
+        document.getElementById('searchInput').value = '';
+        updateNav();
+        updateChips();
+        document.getElementById('listTitle').textContent = '📰 Artikel Terbaru';
+        loadNewsForCategory('all');
+        closeMenu();
+    }
+
+    function showCategory(category) {
+        currentPage = 'category';
+        currentCategory = category;
+        searchQuery = '';
+        document.getElementById('searchInput').value = '';
+        updateNav();
+        updateChips();
+        document.getElementById('listTitle').textContent = `📰 Kategori: ${category}`;
+        loadNewsForCategory(category);
+        closeMenu();
+        window.scrollTo(0, 0);
+    }
+
+    function refreshNews() {
+        showCategory(currentCategory);
+    }
+
+    function openDetail(id) {
+        const article = articleData.find(a => a.id === id);
+        if (!article) return;
+        currentArticleId = id;
+        currentPage = 'detail';
+        document.getElementById('heroSection').classList.add('hidden');
+        document.getElementById('detailView').classList.remove('hidden');
+        document.getElementById('aboutView').classList.add('hidden');
+        document.getElementById('listView').classList.add('hidden');
+        
+        const articleComments = comments[id] || [];
+        const related = articleData.filter(a => a.category === article.category && a.id !== id).slice(0, 4);
+        
+        const imageHtml = article.imageUrl 
+            ? `<div class="detail-img" style="background-image:url('${article.imageUrl}')"></div>`
+            : `<div class="detail-img no-image" style="background:${article.gradient}">${article.emoji || '📰'}</div>`;
+        
+        document.getElementById('detailContent').innerHTML = `
+            <div class="article-detail">
+                ${imageHtml}
+                <h1>${article.title}</h1>
+                <div class="detail-meta">
+                    <span>${article.category} • ${article.time}</span>
+                    <button class="btn-icon" style="background:var(--primary);color:white;border:none;padding:6px 12px;border-radius:5px;cursor:pointer" onclick="toggleBookmark(${article.id})">
+                        ${bookmarks.includes(article.id) ? '🔖 Tersimpan' : '📑 Simpan'}
+                    </button>
+                </div>
+                <div class="detail-content">
+                    ${article.content.map(p => `<p>${p}</p>`).join('')}
+                    ${article.sourceUrl ? `<p><a href="${article.sourceUrl}" target="_blank" style="color:var(--accent)">Baca sumber asli →</a></p>` : ''}
+                </div>
+                
+                <div class="comments-section">
+                    <h3>💬 Komentar (${articleComments.length})</h3>
+                    <div class="comment-form">
+                        <input type="text" id="commentInput" placeholder="Tulis komentar...">
+                        <button onclick="addComment(${article.id})">Kirim</button>
+                    </div>
+                    <div id="commentsList">
+                        ${articleComments.map(c => `<div class="comment-item"><strong>${c.name}</strong>${c.text}</div>`).join('')}
+                    </div>
+                </div>
+                
+                <div class="related-articles">
+                    <h3>📎 Artikel Terkait</h3>
+                    <div class="related-grid">
+                        ${related.map(r => `
+                            <div class="related-card" onclick="openDetail(${r.id})">
+                                <h4>${r.title}</h4>
+                                <small style="color:var(--muted)">${r.category} • ${r.time}</small>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        window.scrollTo(0, 0);
+    }
+
+    function goBack() {
+        if (currentCategory === 'all') {
+            showHome();
+        } else {
+            showCategory(currentCategory);
+        }
+    }
+
+    function showAbout() {
+        currentPage = 'about';
+        updateNav();
+        document.getElementById('heroSection').classList.add('hidden');
+        document.getElementById('detailView').classList.add('hidden');
+        document.getElementById('aboutView').classList.remove('hidden');
+        document.getElementById('listView').classList.add('hidden');
+        closeMenu();
+        window.scrollTo(0, 0);
+    }
+
+    function showBookmarks() {
+        const bookmarkedArticles = articleData.filter(a => bookmarks.includes(a.id));
+        currentPage = 'bookmarks';
+        updateNav();
+        document.getElementById('heroSection').classList.remove('hidden');
+        document.getElementById('detailView').classList.add('hidden');
+        document.getElementById('aboutView').classList.add('hidden');
+        document.getElementById('listView').classList.remove('hidden');
+        document.getElementById('listTitle').textContent = '🔖 Artikel Tersimpan';
+        renderArticleGrid(bookmarkedArticles);
+        renderStats();
+        closeMenu();
+        window.scrollTo(0, 0);
+    }
+
+    function toggleBookmark(id) {
+        const index = bookmarks.indexOf(id);
+        if (index > -1) {
+            bookmarks.splice(index, 1);
+        } else {
+            bookmarks.push(id);
+        }
+        localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+        renderStats();
+        if (currentPage === 'detail' && currentArticleId === id) {
+            openDetail(id);
+        } else if (currentPage === 'bookmarks') {
+            showBookmarks();
+        } else {
+            renderCurrentView();
+        }
+    }
+
+    function handleSearch(event) {
+        if (event.key === 'Enter') {
+            searchArticles();
+        }
+    }
+
+    function searchArticles() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        searchQuery = query;
+        if (!query) {
+            showHome();
+            return;
+        }
+        const filtered = articleData.filter(a => 
+            a.title.toLowerCase().includes(query) || 
+            a.category.toLowerCase().includes(query) ||
+            a.excerpt.toLowerCase().includes(query)
+        );
+        currentPage = 'search';
+        updateNav();
+        document.getElementById('heroSection').classList.remove('hidden');
+        document.getElementById('detailView').classList.add('hidden');
+        document.getElementById('aboutView').classList.add('hidden');
+        document.getElementById('listView').classList.remove('hidden');
+        document.getElementById('listTitle').textContent = `🔍 Hasil pencarian: "${query}"`;
+        renderArticleGrid(filtered);
+        closeMenu();
+    }
+
+    function addComment(articleId) {
+        const input = document.getElementById('commentInput');
+        const text = input.value.trim();
+        if (!text) return;
+        const name = loggedInUser || 'Anonim';
+        if (!comments[articleId]) {
+            comments[articleId] = [];
+        }
+        comments[articleId].push({ name, text });
+        localStorage.setItem('comments', JSON.stringify(comments));
+        openDetail(articleId);
+    }
+
+    // ================= LOGIN =================
+    function showLoginModal() {
+        if (loggedInUser) {
+            if (confirm('Keluar dari akun?')) {
+                loggedInUser = null;
+                localStorage.removeItem('loggedInUser');
+                updateUserInfo();
+            }
+            return;
+        }
+        document.getElementById('loginModal').classList.add('open');
+    }
+
+    function closeLoginModal() {
+        document.getElementById('loginModal').classList.remove('open');
+    }
+
+    function login() {
+        const name = document.getElementById('loginName').value.trim();
+        if (!name) {
+            alert('Masukkan nama pengguna');
+            return;
+        }
+        loggedInUser = name;
+        localStorage.setItem('loggedInUser', name);
+        updateUserInfo();
+        closeLoginModal();
+        alert(`Selamat datang, ${name}!`);
+    }
+
+    function updateUserInfo() {
+        const userInfo = document.getElementById('userInfo');
+        const loginBtn = document.getElementById('loginBtn');
+        if (loggedInUser) {
+            userInfo.textContent = `👤 ${loggedInUser}`;
+            userInfo.style.display = 'block';
+            loginBtn.textContent = 'Keluar';
+        } else {
+            userInfo.style.display = 'none';
+            loginBtn.textContent = 'Masuk';
+        }
+    }
+
+    // ================= DARK MODE =================
+    function toggleDarkMode() {
+        darkMode = !darkMode;
+        document.body.classList.toggle('dark', darkMode);
+        localStorage.setItem('darkMode', darkMode ? 'true' : 'false');
+    }
+
+    // ================= NAVIGATION =================
+    function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
+    }
+    function closeMenu() {
+        document.getElementById('mainNav').classList.remove('open');
+    }
+    function updateNav() {
+        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+        const activeLink = document.querySelector(`.nav-link[data-page="${currentPage}"]`);
+        if (activeLink) activeLink.classList.add('active');
+    }
+    function updateChips() {
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.classList.toggle('active', chip.dataset.category === currentCategory);
+        });
+    }
+
+    // ================= INIT =================
+    function init() {
+        if (localStorage.getItem('darkMode') === 'true') {
+            darkMode = true;
+            document.body.classList.add('dark');
+        }
+        loggedInUser = localStorage.getItem('loggedInUser');
+        updateUserInfo();
+        showHome(); // ini akan memuat dari API
+    }
+
+    init();
+</script>
+</body>
+</html>
